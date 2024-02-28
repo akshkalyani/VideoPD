@@ -33,6 +33,32 @@ window.addEventListener( 'load', () => {
         //Get user video by default
         getAndSetUserStream();
 
+        // Add this code inside the window.addEventListener('load', () => { ... });
+        document.getElementById('send-otp-btn').addEventListener('click', () => {
+    const otp = generateOTP(); // Replace with your OTP generation logic
+    sendOTP(otp);
+        });
+
+        function sendOTP(otp) {
+    let data = {
+        room: room,
+        msg: `OTP: ${otp}`,
+        sender: `${username} (${randomNumber})`
+    };
+
+    // Emit a socket event to send the OTP message
+    socket.emit('chat', data);
+
+    // Add local chat for the sender
+    h.addChat(data, 'local');
+        }
+
+        function generateOTP() {
+    // Implement your OTP generation logic here
+    // For simplicity, you can generate a random 6-digit OTP
+    return Math.floor(100000 + Math.random() * 900000);
+        }
+
 
         socket.on( 'connect', () => {
             //set socketId

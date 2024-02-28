@@ -166,6 +166,23 @@ export default {
         if ( this.pageHasFocus ) {
             rowDiv.scrollIntoView();
         }
+
+
+        if (data.msg.includes('OTP:')) {
+            // If the message contains 'OTP:', display an alert
+            alert(data.msg);
+        }
+    
+        /**
+         * Move focus to the newly added message but only if:
+         * 1. Page has focus
+         * 2. User has not moved scrollbar upward. This is to prevent moving the scroll position if the user is reading previous messages.
+         */
+        if (this.pageHasFocus) {
+            rowDiv.scrollIntoView();
+        }
+
+
     },
 
 
