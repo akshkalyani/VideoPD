@@ -12,7 +12,8 @@ window.addEventListener( 'load', () => {
         document.querySelector( '#username-set' ).attributes.removeNamedItem( 'hidden' );
     }
 
-    else {
+    else 
+    {
         let commElem = document.getElementsByClassName( 'room-comm' );
 
         for ( let i = 0; i < commElem.length; i++ ) {
@@ -35,28 +36,26 @@ window.addEventListener( 'load', () => {
 
         // Add this code inside the window.addEventListener('load', () => { ... });
         document.getElementById('send-otp-btn').addEventListener('click', () => {
-    const otp = generateOTP(); // Replace with your OTP generation logic
-    sendOTP(otp);
+        const otp = generateOTP(); // Replace with your OTP generation logic
+        sendOTP(otp);
         });
-
         function sendOTP(otp) {
-    let data = {
-        room: room,
-        msg: `OTP: ${otp}`,
-        sender: `${username} (${randomNumber})`
-    };
-
-    // Emit a socket event to send the OTP message
-    socket.emit('chat', data);
-
-    // Add local chat for the sender
-    h.addChat(data, 'local');
+            let data = {
+                room: room,
+                msg: `OTP: ${otp}`,
+                sender: `${username} (${randomNumber})`
+            };
+        
+            // Emit a socket event to send the OTP message
+            socket.emit('chat', data);
+        
+            // Display the OTP in the otp-display element
+            document.getElementById('otp-display').innerText = `${otp}`;
         }
-
         function generateOTP() {
-    // Implement your OTP generation logic here
-    // For simplicity, you can generate a random 6-digit OTP
-    return Math.floor(100000 + Math.random() * 900000);
+        // Implement your OTP generation logic here
+        // For simplicity, you can generate a random 6-digit OTP
+        return Math.floor(100000 + Math.random() * 900000);
         }
 
 
@@ -123,7 +122,9 @@ window.addEventListener( 'load', () => {
 
 
             socket.on( 'chat', ( data ) => {
+                // sending the Data to remote user's
                 h.addChat( data, 'remote' );
+                
             } );
         } );
 
@@ -150,7 +151,7 @@ window.addEventListener( 'load', () => {
             //emit chat message
             socket.emit( 'chat', data );
 
-            //add localchat
+            //add localchat -> showing message in local chat
             h.addChat( data, 'local' );
         }
 
@@ -290,13 +291,10 @@ window.addEventListener( 'load', () => {
                 screen.getVideoTracks()[0].addEventListener( 'ended', () => {
                     stopSharingScreen();
                 } );
-            } ).catch( ( e ) => {
-                console.error( e );
+            } ).catch( ( err ) => {
+                console.error( err );
             } );
         }
-
-
-
         function stopSharingScreen() {
             //enable video toggle btn
             h.toggleVideoBtnDisabled( false );
@@ -398,7 +396,27 @@ window.addEventListener( 'load', () => {
             }
         } );
 
-
+        document.getElementById('take-screenshot').addEventListener('click', function () {
+            // html2canvas to capture the screenshot
+            html2canvas(document.body).then(function(canvas) {
+                // Convert the canvas to a Blob object
+                canvas.toBlob(function(blob) {
+                    // Create a new URL for the Blob object
+                    const url = URL.createObjectURL(blob);
+                    // Create a link element and trigger the download
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = "screenshot.png";
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    // Revoke the URL to free up memory
+                    URL.revokeObjectURL(url);
+                }, "image/png");
+            });
+        });
+        
+           
         //When the video icon is clicked
         document.getElementById( 'toggle-video' ).addEventListener( 'click', ( e ) => {
             e.preventDefault();
@@ -425,7 +443,7 @@ window.addEventListener( 'load', () => {
         } );
 
 
-        //When the mute icon is clicked
+        //When the mute icon is clicked on the screen
         document.getElementById( 'toggle-mute' ).addEventListener( 'click', ( e ) => {
             e.preventDefault();
 

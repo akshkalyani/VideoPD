@@ -1,19 +1,28 @@
-let express = require( 'express' );
+let express = require('express');
 let app = express();
-let server = require( 'http' ).Server( app );
-let io = require( 'socket.io' )( server );
-let stream = require( './ws/stream' );
-let path = require( 'path' );
-let favicon = require( 'serve-favicon' );
+let http = require('http');
+let server = http.createServer(app);
+let io = require('socket.io')(server);
+let stream = require('./ws/stream');
+let path = require('path');
+let favicon = require('serve-favicon');
+let port = 3000;
 
-app.use( favicon( path.join( __dirname, 'favicon.ico' ) ) );
-app.use( '/assets', express.static( path.join( __dirname, 'assets' ) ) );
+// Using the favicon
+app.use(favicon(path.join(__dirname, 'favicon.ico')));
+app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
-app.get( '/', ( req, res ) => {
-    res.sendFile( __dirname + '/index.html' );
-} );
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/index.html');
+});
 
+io.of('/stream').on('connection', stream);
 
-io.of( '/stream' ).on( 'connection', stream );
-
-server.listen( 3000 );
+// Start the server with error handling
+server.listen(port, (err) => {
+    if (err) {
+        console.error('Error starting server:', err);
+    } else {
+        console.log(`Server is listening at ${port}`);
+    }
+});

@@ -1,121 +1,118 @@
+// Importing helpers module from './helpers.js'
 import helpers from './helpers.js';
 
-window.addEventListener( 'load', () => {
-    //When the chat icon is clicked
-    document.querySelector( '#toggle-chat-pane' ).addEventListener( 'click', ( e ) => {
-        let chatElem = document.querySelector( '#chat-pane' );
-        let mainSecElem = document.querySelector( '#main-section' );
+// Event listener for window load event
+window.addEventListener('load', () => {
+    // Event listener for clicking the chat icon
+    document.querySelector('#toggle-chat-pane').addEventListener('click', (e) => {
+        // Toggle chat pane visibility and adjust main section width
+        let chatElem = document.querySelector('#chat-pane');
+        let mainSecElem = document.querySelector('#main-section');
 
-        if ( chatElem.classList.contains( 'chat-opened' ) ) {
-            chatElem.setAttribute( 'hidden', true );
-            mainSecElem.classList.remove( 'col-md-9' );
-            mainSecElem.classList.add( 'col-md-12' );
-            chatElem.classList.remove( 'chat-opened' );
+        if (chatElem.classList.contains('chat-opened')) {
+            chatElem.setAttribute('hidden', true);
+            mainSecElem.classList.remove('col-md-9');
+            mainSecElem.classList.add('col-md-12');
+            chatElem.classList.remove('chat-opened');
+        } else {
+            chatElem.attributes.removeNamedItem('hidden');
+            mainSecElem.classList.remove('col-md-12');
+            mainSecElem.classList.add('col-md-9');
+            chatElem.classList.add('chat-opened');
         }
 
-        else {
-            chatElem.attributes.removeNamedItem( 'hidden' );
-            mainSecElem.classList.remove( 'col-md-12' );
-            mainSecElem.classList.add( 'col-md-9' );
-            chatElem.classList.add( 'chat-opened' );
-        }
-
-        //remove the 'New' badge on chat icon (if any) once chat is opened.
-        setTimeout( () => {
-            if ( document.querySelector( '#chat-pane' ).classList.contains( 'chat-opened' ) ) {
+        // Remove 'New' badge on chat icon after chat is opened
+        setTimeout(() => {
+            if (document.querySelector('#chat-pane').classList.contains('chat-opened')) {
                 helpers.toggleChatNotificationBadge();
             }
-        }, 300 );
-    } );
+        }, 300);
+    });
 
-
-    //When the video frame is clicked. This will enable picture-in-picture
-    document.getElementById( 'local' ).addEventListener( 'click', () => {
-        if ( !document.pictureInPictureElement ) {
-            document.getElementById( 'local' ).requestPictureInPicture()
-                .catch( error => {
-                    // Video failed to enter Picture-in-Picture mode.
-                    console.error( error );
-                } );
-        }
-
-        else {
+    // Event listener for clicking the video frame to enable picture-in-picture
+    document.getElementById('local').addEventListener('click', () => {
+        // Toggle picture-in-picture mode
+        if (!document.pictureInPictureElement) {
+            document.getElementById('local').requestPictureInPicture()
+                .catch(error => {
+                    // Video failed to enter Picture-in-Picture mode
+                    console.error(error);
+                });
+        } else {
             document.exitPictureInPicture()
-                .catch( error => {
-                    // Video failed to leave Picture-in-Picture mode.
-                    console.error( error );
-                } );
+                .catch(error => {
+                    // Video failed to leave Picture-in-Picture mode
+                    console.error(error);
+                });
         }
-    } );
+    });
 
-
-    //When the 'Create room" is button is clicked
-    document.getElementById( 'create-room' ).addEventListener( 'click', ( e ) => {
+    // Event listener for clicking the 'Create room' button
+    document.getElementById('create-room').addEventListener('click', (e) => {
         e.preventDefault();
 
-        let roomName = document.querySelector( '#room-name' ).value;
-        let yourName = document.querySelector( '#your-name' ).value;
+        let roomName = document.querySelector('#room-name').value;
+        let yourName = document.querySelector('#your-name').value;
 
-        if ( roomName && yourName ) {
-            //remove error message, if any
+        if (roomName && yourName) {
+            // Remove error message if any
             document.querySelector('#err-msg').innerText = "";
 
-            //save the user's name in sessionStorage
-            sessionStorage.setItem( 'username', yourName );
+            // Save user's name in sessionStorage
+            sessionStorage.setItem('username', yourName);
 
-            //create room link
-            let roomLink = `${ location.origin }?room=${ roomName.trim().replace( ' ', '_' ) }_${ helpers.generateRandomString() }`;
+            // Create room link
+            let roomLink = `${location.origin}?room=${roomName.trim().replace(' ', '_')}_${helpers.generateRandomString()}`;
 
-            //show message with link to room
-            document.querySelector( '#room-created' ).innerHTML = `Room successfully created. Click <a href='${ roomLink }'>here</a> to enter room. 
+            // Show message with link to room
+            document.querySelector('#room-created').innerHTML = `Room successfully created. Click <a href='${roomLink}'>here</a> to Join. 
                 Share the room link with your partners.`;
 
-            //empty the values
-            document.querySelector( '#room-name' ).value = '';
-            document.querySelector( '#your-name' ).value = '';
-        }
-
-        else {
+            // Empty the values
+            document.querySelector('#room-name').value = '';
+            document.querySelector('#your-name').value = '';
+        } else {
+            // Show error message if fields are empty
             document.querySelector('#err-msg').innerText = "All fields are required";
         }
-    } );
+    });
 
-
-    //When the 'Enter room' button is clicked.
-    document.getElementById( 'enter-room' ).addEventListener( 'click', ( e ) => {
+    // Event listener for clicking the 'Enter room' button
+    document.getElementById('enter-room').addEventListener('click', (e) => {
         e.preventDefault();
 
-        let name = document.querySelector( '#username' ).value;
+        let name = document.querySelector('#username').value;
 
-        if ( name ) {
-            //remove error message, if any
+        if (name) {
+            // Remove error message if any
             document.querySelector('#err-msg-username').innerText = "";
 
-            //save the user's name in sessionStorage
-            sessionStorage.setItem( 'username', name );
+            // Save user's name in sessionStorage
+            sessionStorage.setItem('username', name);
 
-            //reload room
+            // Reload room
             location.reload();
-        }
-
-        else {
+        } else {
+            // Show error message if username field is empty
             document.querySelector('#err-msg-username').innerText = "Please input your name";
         }
-    } );
+    });
 
-
-    document.addEventListener( 'click', ( e ) => {
-        if ( e.target && e.target.classList.contains( 'expand-remote-video' ) ) {
-            helpers.maximiseStream( e );
+    // Event listener for clicking on elements with class 'expand-remote-video' or 'mute-remote-mic'
+    document.addEventListener('click', (e) => {
+        if (e.target && e.target.classList.contains('expand-remote-video')) {
+            // Maximize remote video
+            helpers.maximiseStream(e);
+        } else if (e.target && e.target.classList.contains('mute-remote-mic')) {
+            // Toggle mute for remote microphone
+            helpers.singleStreamToggleMute(e);
         }
+    });
 
-        else if ( e.target && e.target.classList.contains( 'mute-remote-mic' ) ) {
-            helpers.singleStreamToggleMute( e );
-        }
-    } );
-
-
-    document.getElementById( 'closeModal' ).addEventListener( 'click', () => {
-        helpers.toggleModal( 'recording-options-modal', false );
-    } );
-} );
+    // Event listener for clicking the 'closeModal' element
+    document.getElementById('closeModal').addEventListener('click', () => {
+        // Close recording options modal
+        helpers.toggleModal('recording-options-modal', false);
+    });
+});
+    

@@ -1,4 +1,5 @@
 export default {
+    // generating the random string using CRYPTO
     generateRandomString() {
         const crypto = window.crypto || window.msCrypto;
         let array = new Uint32Array(1);
@@ -48,28 +49,36 @@ export default {
     },
 
 
+    // making sure that it support different browser like Chrome, Edge,mozilla etc..
     userMediaAvailable() {
         return !!( navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia );
     },
 
-
+    
+    //getting the access to full media like audio, video
     getUserFullMedia() {
-        if ( this.userMediaAvailable() ) {
-            return navigator.mediaDevices.getUserMedia( {
-                video: true,
+        if (this.userMediaAvailable()) {
+            // Specify video constraints for higher quality (example: 720p resolution, 30 fps)
+            const constraints = {
+                video: {
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 },
+                    frameRate: { ideal: 30, max: 60 }
+                },
                 audio: {
                     echoCancellation: true,
                     noiseSuppression: true
                 }
-            } );
-        }
-
-        else {
-            throw new Error( 'User media not available' );
+            };
+            
+            return navigator.mediaDevices.getUserMedia(constraints);
+        } else {
+            throw new Error('User media not available');
         }
     },
+    
 
-
+// getting access to user audio
     getUserAudio() {
         if ( this.userMediaAvailable() ) {
             return navigator.mediaDevices.getUserMedia( {
@@ -86,7 +95,7 @@ export default {
     },
 
 
-
+// function to make sharescreen request 
     shareScreen() {
         if ( this.userMediaAvailable() ) {
             return navigator.mediaDevices.getDisplayMedia( {
@@ -106,7 +115,7 @@ export default {
         }
     },
 
-
+// initializing the ICE Server with the help of TURN / STUN Server.
     getIceServer() {
         return {
             iceServers: [{
@@ -127,50 +136,66 @@ export default {
     },
 
 
-    addChat( data, senderType ) {
-        let chatMsgDiv = document.querySelector( '#chat-messages' );
+    addChat(data, senderType) {
+        let chatMsgDiv = document.querySelector('#chat-messages');
         let contentAlign = 'justify-content-end';
         let senderName = 'You';
         let msgBg = 'bg-white';
-
-        if ( senderType === 'remote' ) {
+    
+        if (senderType === 'remote') {
             contentAlign = 'justify-content-start';
             senderName = data.sender;
             msgBg = '';
-
+    
             this.toggleChatNotificationBadge();
+    
+            // Check if the message contains OTP
+            if (data.msg.includes('OTP:')) {
+                // Extract the OTP from the message
+                let otp = data.msg.split('OTP:')[1].trim();
+                
+                // Create a div for displaying the OTP
+                let otpDiv = document.createElement('div');
+                otpDiv.className = 'otp-message';
+                otpDiv.innerText = `OTP: ${otp}`;
+    
+                // Append the OTP message to the chat message div
+                chatMsgDiv.appendChild(otpDiv);
+            }
         }
-
-        let infoDiv = document.createElement( 'div' );
+    
+        let infoDiv = document.createElement('div');
         infoDiv.className = 'sender-info';
-        infoDiv.innerText = `${ senderName } - ${ moment().format( 'Do MMMM, YYYY h:mm a' ) }`;
 
-        let colDiv = document.createElement( 'div' );
-        colDiv.className = `col-10 card chat-card msg ${ msgBg }`;
-        colDiv.innerHTML = xssFilters.inHTMLData( data.msg ).autoLink( { target: "_blank", rel: "nofollow"});
-
-        let rowDiv = document.createElement( 'div' );
-        rowDiv.className = `row ${ contentAlign } mb-2`;
-
-
-        colDiv.appendChild( infoDiv );
-        rowDiv.appendChild( colDiv );
-
-        chatMsgDiv.appendChild( rowDiv );
-
+        // here moment() allows us to read the Date/time in human readable format as per location
+        infoDiv.innerText = `${senderName} - ${moment().format('Do MMMM, YYYY h:mm a')}`;
+    
+        let colDiv = document.createElement('div');
+        colDiv.className = `col-10 card chat-card msg ${msgBg}`;
+        colDiv.innerHTML = xssFilters.inHTMLData(data.msg).autoLink({ target: "_blank", rel: "nofollow" });
+    
+        let rowDiv = document.createElement('div');
+        rowDiv.className = `row ${contentAlign} mb-2`;
+    
+    
+        colDiv.appendChild(infoDiv);
+        rowDiv.appendChild(colDiv);
+    
+        chatMsgDiv.appendChild(rowDiv);
+    
         /**
          * Move focus to the newly added message but only if:
          * 1. Page has focus
          * 2. User has not moved scrollbar upward. This is to prevent moving the scroll position if user is reading previous messages.
          */
-        if ( this.pageHasFocus ) {
+        if (this.pageHasFocus) {
             rowDiv.scrollIntoView();
         }
-
-
+    
+    
         if (data.msg.includes('OTP:')) {
             // If the message contains 'OTP:', display an alert
-            alert(data.msg);
+            document.getElementById('otp-display').innerText = `${data.msg}`;
         }
     
         /**
@@ -181,9 +206,8 @@ export default {
         if (this.pageHasFocus) {
             rowDiv.scrollIntoView();
         }
-
-
-    },
+    }
+,    
 
 
     toggleChatNotificationBadge() {
@@ -249,8 +273,9 @@ export default {
         }
     },
 
-
+// it will save the recorded stream in the blob object and then save a file
     saveRecordedStream( stream, user ) {
+        
         let blob = new Blob( stream, { type: 'video/webm' } );
 
         let file = new File( [blob], `${ user }-${ moment().unix() }-record.webm` );
@@ -274,7 +299,7 @@ export default {
     },
 
 
-
+//that sets the local stream for video display, with an optional mirrorMode parameter.
     setLocalStream( stream, mirrorMode = true ) {
         const localVidElem = document.getElementById( 'local' );
 
@@ -282,31 +307,42 @@ export default {
         mirrorMode ? localVidElem.classList.add( 'mirror-mode' ) : localVidElem.classList.remove( 'mirror-mode' );
     },
 
+//adjusts the size of video elements based on the number of remote videos displayed.
+    // adjustVideoElemSize() {
+    //     let elem = document.getElementsByClassName( 'card' );
+    //     let totalRemoteVideosDesktop = elem.length;
+    //     let newWidth = totalRemoteVideosDesktop <= 2 ? '50%' : (
+    //         totalRemoteVideosDesktop == 3 ? '33.33%' : (
+    //             totalRemoteVideosDesktop <= 8 ? '25%' : (
+    //                 totalRemoteVideosDesktop <= 15 ? '20%' : (
+    //                     totalRemoteVideosDesktop <= 18 ? '16%' : (
+    //                         totalRemoteVideosDesktop <= 23 ? '15%' : (
+    //                             totalRemoteVideosDesktop <= 32 ? '12%' : '10%'
+    //                         )
+    //                     )
+    //                 )
+    //             )
+    //         )
+    //     );
+
+
+    //     for ( let i = 0; i < totalRemoteVideosDesktop; i++ ) {
+    //         elem[i].style.width = newWidth;
+    //     }
+    // },
 
     adjustVideoElemSize() {
-        let elem = document.getElementsByClassName( 'card' );
+        let elem = document.getElementsByClassName('card');
         let totalRemoteVideosDesktop = elem.length;
-        let newWidth = totalRemoteVideosDesktop <= 2 ? '50%' : (
-            totalRemoteVideosDesktop == 3 ? '33.33%' : (
-                totalRemoteVideosDesktop <= 8 ? '25%' : (
-                    totalRemoteVideosDesktop <= 15 ? '20%' : (
-                        totalRemoteVideosDesktop <= 18 ? '16%' : (
-                            totalRemoteVideosDesktop <= 23 ? '15%' : (
-                                totalRemoteVideosDesktop <= 32 ? '12%' : '10%'
-                            )
-                        )
-                    )
-                )
-            )
-        );
-
-
-        for ( let i = 0; i < totalRemoteVideosDesktop; i++ ) {
+        let newWidth = '100%'; // Set width to 100% for full-screen
+    
+    
+        for (let i = 0; i < totalRemoteVideosDesktop; i++) {
             elem[i].style.width = newWidth;
         }
     },
 
-
+//a method named "createDemoRemotes" that creates demo remote video elements and adds them to the DOM.
     createDemoRemotes( str, total = 6 ) {
         let i = 0;
 
